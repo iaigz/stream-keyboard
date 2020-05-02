@@ -1,13 +1,19 @@
-const abc = require('iai-api')
-const log = abc.log
-const readkeys = abc.readkeys
+const Log = require('@iaigz/core-log')
+const log = new Log()
 
 log.level = log.VERB
+
+const readkeys = require('..')
+
+log.info('this demonstrates "focuslost" event. Use Ctrl+C to trigger it')
+
+log.warn('TODO: Proba "Inicio" e "Fin"!!! non vai guay')
 
 process.stdin
   .pipe(readkeys({ humanize: true }))
   .on('data', (data) => log.echo('data: "%s"', data))
-  .once('focuslost', function first () { // once!!
+  .once('focuslost', function first () {
+    // once!! (or will run again and again)
     process.stdin.unpipe(this)
     log.warn('first lost focus, unpiped stdin, resuming in 5s')
     this.once('focuslost', () => {

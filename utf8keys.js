@@ -82,8 +82,8 @@ module.exports = {
   '\u001b[5~': 'RePag', // [27,91,52,126] - Page up
   '\u001b[6~': 'AvPag', // [27,91,53,126] - Page down
 
-  '\u001b[A': 'ArrowUp',    // [27,91,65]
-  '\u001b[B': 'ArrowDown',  // [27,91,66]
+  '\u001b[A': 'ArrowUp', // [27,91,65]
+  '\u001b[B': 'ArrowDown', // [27,91,66]
   '\u001b[C': 'ArrowRight', // [27,91,67]
-  '\u001b[D': 'ArrowLeft'   // [27,91,68]
+  '\u001b[D': 'ArrowLeft' // [27,91,68]
 }

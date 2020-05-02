@@ -1,10 +1,11 @@
-const abc = require('iai-api')
-const log = abc.log
-const readkeys = abc.readkeys
+const Log = require('@iaigz/core-log')
+const log = new Log()
+
+const readkeys = require('..')
 
 log.level = log.VERB
 
-log.warn('This test will never end until received Ctrl+C')
+log.warn('This demo will never end until received Ctrl+C')
 process.stdin
   .pipe(readkeys({ humanize: true }))
   .on('data', (data) => log.echo('data: "%s"', data))
