@@ -2,7 +2,7 @@ console.log('TEST node', __filename)
 
 process.on('exit', code => { console.log('CODE', code) })
 
-//const keyboard = require('..')
+// const keyboard = require('..')
 
 const { Readable, Transform } = require('stream')
 
