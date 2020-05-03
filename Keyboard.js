@@ -128,6 +128,7 @@ class Keyboard extends Transform {
     if (!this._kbd.t) throw new Error('invalid _setTimeout call')
     // this is the action that runs when timed out
     this._kbd.timeout = setTimeout(() => {
+      log.info('keyboard stream timed out')
       if (this.listenerCount('timeout')) {
         this.emit('timeout')
       } else {
@@ -135,7 +136,6 @@ class Keyboard extends Transform {
         error.code = 'KEYBOARD_TIMEOUT'
         this.emit('error', error)
       }
-      log.info('keyboard stream timed out and will end now!')
       this.end()
     }, this._kbd.t * 1000)
     log.verb('keyboard stream will timeout in %ss', this._kbd.t)
