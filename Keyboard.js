@@ -109,43 +109,6 @@ class Keyboard extends Transform {
 
 module.exports = Keyboard
 
-/**
- * @internal function enableRawMode
- *
- * helps managing raw mode for TTY sources
- *
- * this depends on @iaigz/core-log process bindings:
- *
- * - to detect uncaughException via 'exit' event on process
- * - to rely on default binding for SIGINT event on process
- *
- * basics from http://stackoverflow.com/a/21947851/1894803
- */
-/*
-function enableRawMode (stream) {
-  stream.setRawMode(true)
-  log.warn('raw mode enabled')
-  var disable = () => {
-    if (!stream.isRaw) {
-      log.warn('will not disable raw mode because it is disabled already')
-      return false
-    }
-    stream.setRawMode(false)
-    log.warn('raw mode disabled')
-  }
-  var trap = (code) => {
-    log[code ? 'warn' : 'info']('Caught exit with code %s', code)
-    disable()
-  }
-  process.on('exit', trap)
-  // returned function should be called to disable the raw mode
-  return () => {
-    process.removeListener('exit', trap)
-    disable()
-  }
-}
-*/
-
 /* function readkeys (opts) {
 
   output._transform = function _go (chunk, encoding, callback) {
@@ -165,30 +128,6 @@ function enableRawMode (stream) {
       return this.end()
     }
   }
-  // keeps logs readable
-  if (!opts.t) delete opts.t
-  if (!opts.input) delete opts.input
-  if (!opts.humanize) delete opts.humanize
-
-  log.info('keyboard created: %j', opts)
-
-  output._final = function (callback) {
-    if (~sources.indexOf(process.stdin)) {
-      process.stdin.pause()
-      log.warn('paused process.stdin')
-    }
-    return callback(null)
-  }
-
-  // management of RawMode for sources piped-in (usually process.stdin)
-  output.on('pipe', source => {
-    // handle RawMode when appropiate
-    if (source.setRawMode && !source.isRaw) {
-      var disableRawMode = enableRawMode(source)
-      // TODO need? on 'focuslost' disableRawMode
-      output.once('unpipe', src => src === source && disableRawMode())
-    }
-  })
 
   if (opts.t) {
     log.info('setting timeout mechanics (t=%s)', opts.t)
