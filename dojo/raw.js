@@ -3,14 +3,14 @@ const { Transform } = require('stream')
 const Log = require('@iaigz/core-log')
 const log = new Log()
 
-const keyboard = require('..')
+const Keyboard = require('..')
 
 log.level = log.VERB
 
 log.info('demo should close gracefully after pressing lowercase "c"')
 
 process.stdin
-  .pipe(keyboard({ sigint: 0x63 }))
+  .pipe(new Keyboard({ sigint: 0x63 }))
   .on('end', () => {
     log.info('keyboard has end, process should exit gracefully')
   })
@@ -19,10 +19,10 @@ process.stdin
     transform (chunk, enc, cb) {
       console.error('chunk:', chunk)
       console.error('values:', Array.prototype.map.call(chunk, c => c))
-      cb(null, chunk)
+      cb(null)
     }
   }))
-  // pipe the raw key data to stdout
+  // pipe tranformed data to stdout
   .pipe(process.stdout)
 
 /* vim: set expandtab: */
