@@ -2,7 +2,7 @@ console.log('TEST node', __filename)
 
 process.on('exit', code => { console.log('CODE', code) })
 
-// const keyboard = require('..')
+// const Keyboard = require('..')
 
 throw new Error('test to be written')
 

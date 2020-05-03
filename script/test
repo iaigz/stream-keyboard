@@ -4,6 +4,7 @@ repo="$(iai repo)" || exit
 cd "$repo" || exit
 
 node test/exports.js || exit
+node test/raw-through.js || exit
 
 {
   echo "TEST standard --fix"
