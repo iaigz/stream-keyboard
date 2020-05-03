@@ -79,6 +79,7 @@ correct.forEach((value, idx) => {
 
 // arguments which should throw at instance creation
 const incorrect = [
+  { sources: 'something' } // sources is reserved for internal data
 ]
 incorrect.forEach((value, idx) => {
   try {

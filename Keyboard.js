@@ -28,19 +28,51 @@ class Keyboard extends Transform {
     if (typeof opts.sigint === 'number') {
       opts = { ...opts, sigint: [opts.sigint] }
     }
+    if (typeof opts.sources !== 'undefined') {
+      throw new TypeError('opts.sources is not allowed')
+    }
 
     super()
 
     this._kbd = {
+      // options for behaviour
       t: 0, // max seconds waiting for input until 'end' (disabled by default)
       input: null, // Readable stream to pipe into
       sigint: [3], // keycode to interpret as 'end of input stream' (Ctrl+C)
       humanize: false, // whenever to convert input keycodes to a string
+      // internal data
+      sources: [],
       ...opts
     }
     if (this._kbd.input !== null) {
       assert(opts.input instanceof Readable, 'opts.input must be Readable')
     }
+
+    // management of special sources piped-in (usually process.stdin)
+    this.on('pipe', source => {
+      /*
+      if (~this._kbd.sources.indexOf(source)) {
+        return log.error('same source piped in twice')
+      }
+      */
+      this._kbd.sources.push(source)
+      log.verb('source %s piped into key stream', this._kbd.sources.length - 1)
+      // handle RawMode when appropiate
+      if (source.isTTY && !source.isRaw) {
+        source.setRawMode(true)
+        // var disableRawMode = enableRawMode(source)
+        // output.once('unpipe', src => src === source && disableRawMode())
+      }
+    })
+    this.on('unpipe', source => {
+      const id = this._kbd.sources.indexOf(source)
+      if (~id) {
+        this._kbd.sources.splice(id, 1)
+        log.verb('source %s was unpiped', id)
+      } else {
+        log.warn('an unkown source was unpiped')
+      }
+    })
   }
 
   _transform (chunk, encoding, callback) {
@@ -51,9 +83,53 @@ class Keyboard extends Transform {
       return this.end()
     }
   }
+
+  _final (callback) {
+    this._kbd.sources.forEach(source => {
+      if (source.isTTY && source.isRaw) source.setRawMode(false)
+    })
+    callback(null)
+  }
 }
 
 module.exports = Keyboard
+
+/**
+ * @internal function enableRawMode
+ *
+ * helps managing raw mode for TTY sources
+ *
+ * this depends on @iaigz/core-log process bindings:
+ *
+ * - to detect uncaughException via 'exit' event on process
+ * - to rely on default binding for SIGINT event on process
+ *
+ * basics from http://stackoverflow.com/a/21947851/1894803
+ */
+/*
+function enableRawMode (stream) {
+  stream.setRawMode(true)
+  log.warn('raw mode enabled')
+  var disable = () => {
+    if (!stream.isRaw) {
+      log.warn('will not disable raw mode because it is disabled already')
+      return false
+    }
+    stream.setRawMode(false)
+    log.warn('raw mode disabled')
+  }
+  var trap = (code) => {
+    log[code ? 'warn' : 'info']('Caught exit with code %s', code)
+    disable()
+  }
+  process.on('exit', trap)
+  // returned function should be called to disable the raw mode
+  return () => {
+    process.removeListener('exit', trap)
+    disable()
+  }
+}
+*/
 
 /* function readkeys (opts) {
 
@@ -81,25 +157,6 @@ module.exports = Keyboard
 
   log.info('keyboard created: %j', opts)
 
-  // keep record of sources piped in to detect duplications
-  var sources = []
-  output
-    .on('unpipe', source => {
-      var sourceId = sources.indexOf(source)
-      sources.splice(sourceId, 1)
-      if (!~sourceId) {
-        log.warn('unpiped an unknown source from output stream')
-      } else {
-        log.info('source %s unpiped from output stream', sourceId)
-      }
-    })
-    .on('pipe', source => {
-      if (~sources.indexOf(source)) {
-        return log.error('same source piped in twice')
-      }
-      log.info('source %s piped into key stream', sources.length)
-      sources.push(source)
-    })
   output._final = function (callback) {
     if (~sources.indexOf(process.stdin)) {
       process.stdin.pause()
@@ -175,36 +232,6 @@ function keystroke (buffer) {
   return utf8keys[buffer.toString('utf8')] || buffer.toString('utf8')
 }
 
-// this depends on iai-abc process bindings:
-// - to detect uncaughException via 'exit' event on process
-// - to rely on default binding for SIGINT event on process
-// basics from http://stackoverflow.com/a/21947851/1894803
-// TODO does this belong here?
-function enableRawMode (stream) {
-  if (!stream.setRawMode) {
-    throw new TypeError('this stream does not seem to support raw mode')
-  }
-  stream.setRawMode(true)
-  log.warn('raw mode enabled')
-  var disable = () => {
-    if (!stream.isRaw) {
-      log.warn('will not disable raw mode because it is disabled already')
-      return false
-    }
-    log.warn('raw mode disabled')
-    stream.setRawMode(false)
-  }
-  var trap = (code) => {
-    log[code ? 'warn' : 'info']('Caught exit with code %s', code)
-    disable()
-  }
-  process.on('exit', trap)
-  // returned function should be called to disable the raw mode
-  return () => {
-    process.removeListener('exit', trap)
-    disable()
-  }
-}
 */
 
 /* vim: set expandtab: */
