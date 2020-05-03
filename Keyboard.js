@@ -1,50 +1,60 @@
+const assert = require('assert')
 const { Transform, Readable } = require('stream')
+
+// utility to compare if one array and one buffer are equivalent
+const equivalent = (array, buffer) => {
+  return array.length === buffer.length &&
+    array.every((val, key) => val === buffer[key])
+}
 // const Aslice = Array.prototype.slice
 
-// const Log = require('@iaigz/core-log')
-// const log = new Log()
-// log.level = abc.Log.VERB
+const Log = require('@iaigz/core-log')
+const log = new Log()
+log.level = Log.VERB
 
 /**
+ * @class Keyboard
+ *
  * reads keyboard strokes from any readable stream
+ *
  * if opts.t is given, it will timeout reading after 't' ms without data
+ *
  * opts.sigint is the keycode to interpret as 'end of input stream'
- * returns Transform stream
  */
 
 class Keyboard extends Transform {
   constructor (opts = {}) {
+    if (opts instanceof Readable) opts = { input: opts }
+
     super()
-    if (opts.input instanceof Readable) {
+
+    this._kbd = {
+      t: 0, // max seconds waiting for input until 'end' (disabled by default)
+      input: null, // Readable stream to pipe into
+      sigint: [3], // keycode to interpret as 'end of input stream' (Ctrl+C)
+      humanize: false, // whenever to convert input keycodes to a string
+      ...opts
+    }
+    if (this._kbd.input !== null) {
+      assert(opts.input instanceof Readable, 'opts.input must be Readable')
     }
   }
 
   _transform (chunk, encoding, callback) {
+    // assume each chunk is a keystroke
     callback(null, chunk)
+    if (equivalent(this._kbd.sigint, chunk)) {
+      log.info('Ending on keycode %j', this._kbd.sigint)
+      return this.end()
+    }
   }
 }
 
 module.exports = Keyboard
 
 /* function readkeys (opts) {
-  assert(this instanceof module.exports, 'use the new keyword')
-  // opts may be only opts.input (set a pipe from given stream)
-  if (opts instanceof Readable) opts = { input: opts }
 
-  opts = opts || {}
-  // set 'max seconds waiting for input' timeout (disabled by default)
-  opts.t = opts.t || 0
-  // if opts.input is null (none given), will not pipe any input by default
-  opts.input = opts.input || null
-  // key code to interpret as 'end of input stream' (defaults to Ctrl+C) to end
-  opts.sigint = opts.sigint || 3
-  // setting to true will convert input key codes to humanized "key combos"
-  opts.humanize = !!opts.humanize
-
-  // this is the transform stream that will be returned
-  var output = new PassThrough()
   output._transform = function _go (chunk, encoding, callback) {
-    // assume each chunk is a keystroke
     log.debug('keyboard processing %j', Aslice.call(chunk))
     // TODO may be reading buffered data!!
     // if 'chunk is not a key combo' => 'do NOT push data, discard it'
