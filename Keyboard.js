@@ -34,10 +34,8 @@ class Keyboard extends Transform {
     if (typeof opts.sigint === 'number') {
       opts = { ...opts, sigint: [opts.sigint] }
     }
-    prohibit(opts, ['sources', 'traps'])
-    if (typeof opts.sources !== 'undefined') {
-      throw new TypeError('opts.sources is not allowed')
-    }
+    // keys not allowed to exist on options object
+    prohibit(opts, ['sources', 'traps', 'timeout'])
 
     super()
 
@@ -50,19 +48,25 @@ class Keyboard extends Transform {
       // internal data
       sources: [],
       traps: Object.create(null),
+      timeout: null,
       ...opts
     }
     if (this._kbd.input !== null) {
       assert(opts.input instanceof Readable, 'opts.input must be Readable')
     }
 
-    // management of special sources piped-in (usually process.stdin)
+    // actions to do when sources are piped-in (usually process.stdin)
     this.on('pipe', source => {
       if (~this._kbd.sources.indexOf(source)) {
         return log.warn('same source piped in twice')
       }
+
       const id = this._kbd.sources.push(source) - 1
       log.verb('source %s piped into key stream', id)
+
+      // setup timeout when appropiate
+      if (this._kbd.t && this._kbd.timeout === null) this._setTimeout()
+
       // handle RawMode when appropiate
       if (source.isTTY && !source.isRaw) {
         source.setRawMode(true)
@@ -75,6 +79,7 @@ class Keyboard extends Transform {
         this._kbd.traps[id] = trap
       }
     })
+    // actions to do when sources are piped-out (usually process.stdin)
     this.on('unpipe', source => {
       const id = this._kbd.sources.indexOf(source)
       if (~id) {
@@ -83,6 +88,14 @@ class Keyboard extends Transform {
       } else {
         return log.warn('an unkown source was unpiped')
       }
+
+      // handle timeout clearing when appropiate
+      if (!this._kbd.sources.length && this._kbd.timeout) {
+        clearTimeout(this._kbd.timeout)
+        log.verb('no sources left, clearing timeout')
+      }
+
+      // handle RawMode when appropiate
       if (source.isTTY) {
         if (source.isRaw) {
           source.setRawMode(false)
@@ -98,12 +111,34 @@ class Keyboard extends Transform {
   }
 
   _transform (chunk, encoding, callback) {
+    // refresh timeout mechanics when aplicable
+    if (this._kbd.t) {
+      clearTimeout(this._kbd.timeout)
+      this._setTimeout()
+    }
     // assume each chunk is a keystroke
     callback(null, chunk)
     if (equivalent(this._kbd.sigint, chunk)) {
       log.info('Ending on keycode %j', this._kbd.sigint)
       return this.end()
     }
+  }
+
+  _setTimeout () {
+    if (!this._kbd.t) throw new Error('invalid _setTimeout call')
+    // this is the action that runs when timed out
+    this._kbd.timeout = setTimeout(() => {
+      if (this.listenerCount('timeout')) {
+        this.emit('timeout')
+      } else {
+        const error = new Error('Keyboard stream timeout')
+        error.code = 'KEYBOARD_TIMEOUT'
+        this.emit('error', error)
+      }
+      log.info('keyboard stream timed out and will end now!')
+      this.end()
+    }, this._kbd.t * 1000)
+    log.verb('keyboard stream will timeout in %ss', this._kbd.t)
   }
 }
 
@@ -128,50 +163,6 @@ module.exports = Keyboard
       return this.end()
     }
   }
-
-  if (opts.t) {
-    log.info('setting timeout mechanics (t=%s)', opts.t)
-    // this is the action that runs when timed out
-    var timeout = () => {
-      if (output.listeners('timeout').length) {
-        output.emit('timeout')
-      } else {
-        var error = new Error('Keyboard timeout')
-        error.code = 'KEY_TIMEOUT'
-        output.emit('error', error)
-      }
-      log.warn('keyboard timed out and will end now!')
-      output.end()
-    }
-    // these are the timeout mechanism internals
-    var to = null
-    var forgive = () => to && clearTimeout(to)
-    var refresh = () => {
-      forgive()
-      log.debug('keyboard will timeout in %ss', opts.t)
-      to = setTimeout(timeout, opts.t * 1000)
-    }
-    // this is the logic implementing the timeout feature
-    output.on('pipe', source => {
-      refresh()
-      source.on('data', refresh)
-      output.once('finish', function () {
-        source.removeListener('data', refresh)
-        to && forgive()
-        log.debug('keyboard stoped timeout forever')
-      })
-    })
-  }
-
-  // informational messages (for debugging)
-  output
-    // writable interface (input data)
-    .on('close', () => log.info('output stream has closed'))
-    .on('drain', () => log.verb('output stream has drained'))
-    .on('finish', () => log.verb('output stream has finished'))
-    // readable interface (output data)
-    .on('end', () => log.verb('output stream has end'))
-    // .on('readable', () => log.info('output stream becomes readable'))
 
   return opts.input ? opts.input.pipe(output) : output
 }

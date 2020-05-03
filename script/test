@@ -10,6 +10,11 @@ node test/sigint-default.js || exit
 node test/sigint-number.js || exit
 node test/sigint-array.js || exit
 
+node test/timeout.js || exit
+node test/timeout-refresh.js || exit
+node test/timeout-unpipe.js || exit
+node test/timeout-error.js || exit
+
 node test/tty-rawmode.js || exit
 node test/tty-rawmode-trap.js || exit
 node test/tty-rawmode-error.js || exit
