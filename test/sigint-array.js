@@ -6,7 +6,7 @@ const { PassThrough } = require('stream')
 const Keyboard = require('..')
 
 // array value to customize "sigint" code
-const sigint = [0, 27,128]
+const sigint = [0, 27, 128]
 
 const stub = new PassThrough()
 const keystream = new Keyboard({ sigint: sigint })
