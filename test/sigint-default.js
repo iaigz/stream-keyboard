@@ -10,8 +10,8 @@ const keystream = new Keyboard()
 
 const seq = [
   [0],
-  [27, 14],
-  [65, 66, 128]
+  [27],
+  [3] // this should be the default sigint code (Ctrl+C)
 ]
 let idx = 0
 let end = false
@@ -34,10 +34,10 @@ stub.pipe(keystream)
       console.log('FAIL data buffer values are incorrect for seq[%s]', idx)
       process.exit(1)
     }
-    if (++idx === seq.length) {
-      stub.end() // emulate input end when seq has finish
-    } else {
+    if (++idx !== seq.length) {
       stub.write(Buffer.from(seq[idx]))
+    } else {
+      console.log('INFO keystream should end automatically')
     }
   })
   .on('end', () => {
