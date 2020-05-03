@@ -12,6 +12,12 @@ const Log = require('@iaigz/core-log')
 const log = new Log()
 log.level = Log.VERB
 
+const prohibit = (opts, keys) => keys.forEach(key => {
+  if (typeof opts[key] !== 'undefined') {
+    throw new TypeError(`usage of opts.${key} is not allowed`)
+  }
+})
+
 /**
  * @class Keyboard
  *
@@ -28,6 +34,7 @@ class Keyboard extends Transform {
     if (typeof opts.sigint === 'number') {
       opts = { ...opts, sigint: [opts.sigint] }
     }
+    prohibit(opts, ['sources', 'traps'])
     if (typeof opts.sources !== 'undefined') {
       throw new TypeError('opts.sources is not allowed')
     }
@@ -42,6 +49,7 @@ class Keyboard extends Transform {
       humanize: false, // whenever to convert input keycodes to a string
       // internal data
       sources: [],
+      traps: Object.create(null),
       ...opts
     }
     if (this._kbd.input !== null) {
@@ -50,18 +58,21 @@ class Keyboard extends Transform {
 
     // management of special sources piped-in (usually process.stdin)
     this.on('pipe', source => {
-      /*
       if (~this._kbd.sources.indexOf(source)) {
-        return log.error('same source piped in twice')
+        return log.warn('same source piped in twice')
       }
-      */
-      this._kbd.sources.push(source)
-      log.verb('source %s piped into key stream', this._kbd.sources.length - 1)
+      const id = this._kbd.sources.push(source) - 1
+      log.verb('source %s piped into key stream', id)
       // handle RawMode when appropiate
       if (source.isTTY && !source.isRaw) {
         source.setRawMode(true)
-        // var disableRawMode = enableRawMode(source)
-        // output.once('unpipe', src => src === source && disableRawMode())
+        const trap = () => {
+          if (!source.isRaw) return
+          log.warn('trapped a process\' exit while TTY source was in raw mode')
+          source.setRawMode(false)
+        }
+        process.prependListener('exit', trap)
+        this._kbd.traps[id] = trap
       }
     })
     this.on('unpipe', source => {
@@ -70,7 +81,14 @@ class Keyboard extends Transform {
         this._kbd.sources.splice(id, 1)
         log.verb('source %s was unpiped', id)
       } else {
-        log.warn('an unkown source was unpiped')
+        return log.warn('an unkown source was unpiped')
+      }
+      if (source.isTTY) {
+        source.isRaw && source.setRawMode(false)
+        if (this._kbd.traps[id]) {
+          process.removeListener('exit', this._kbd.traps[id])
+          delete this._kbd.traps[id]
+        }
       }
     })
   }
@@ -82,13 +100,6 @@ class Keyboard extends Transform {
       log.info('Ending on keycode %j', this._kbd.sigint)
       return this.end()
     }
-  }
-
-  _final (callback) {
-    this._kbd.sources.forEach(source => {
-      if (source.isTTY && source.isRaw) source.setRawMode(false)
-    })
-    callback(null)
   }
 }
 

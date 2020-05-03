@@ -11,6 +11,8 @@ node test/sigint-number.js || exit
 node test/sigint-array.js || exit
 
 node test/tty-rawmode.js || exit
+node test/tty-rawmode-trap.js || exit
+node test/tty-rawmode-error.js || exit
 
 {
   echo "TEST standard --fix"
