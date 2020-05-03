@@ -18,13 +18,17 @@ let end = false
 
 stub.pipe(keystream)
   .on('data', data => {
-    if (data.length === seq[idx].length) { console.log('PASS data buffer length is correct for seq[%s]', idx) } else {
+    if (data.length === seq[idx].length) {
+      console.log('PASS data buffer length is correct for seq[%s]', idx)
+    } else {
       console.error(`seq[${idx}]:`, seq[idx])
       console.error('data:', data)
       console.log('FAIL data buffer length incorrect for seq[%s]', idx)
       process.exit(1)
     }
-    if (seq[idx].every((value, pos) => value === data[pos])) { console.log('PASS data buffer has every expected value for seq[%s]', idx) } else {
+    if (seq[idx].every((value, pos) => value === data[pos])) {
+      console.log('PASS data buffer has every expected value for seq[%s]', idx)
+    } else {
       console.error(`seq[${idx}]:`, seq[idx])
       console.error('data:', data)
       console.log('FAIL data buffer values are incorrect for seq[%s]', idx)
@@ -38,12 +42,16 @@ stub.pipe(keystream)
   })
 
 process.on('beforeExit', () => {
-  if (idx === seq.length) { console.log('PASS Keyboard stream "data" event was emitted %s times', idx) } else {
+  if (idx === seq.length) {
+    console.log('PASS Keyboard stream "data" event was emitted %s times', idx)
+  } else {
     console.error('idx (times emitted):', idx)
     console.log('FAIL "data" should have been emmited %s times', seq.length)
     process.exitCode = 1
   }
-  if (end === true) { console.log('PASS Keyboard stream "end" event was emitted') } else {
+  if (end === true) {
+    console.log('PASS Keyboard stream "end" event was emitted')
+  } else {
     console.log('FAIL "end" should have been emmited')
     process.exitCode = 1
   }
