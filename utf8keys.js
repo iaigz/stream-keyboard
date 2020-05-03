@@ -32,7 +32,7 @@ module.exports = {
   '\u0018': 'Ctrl+X', // 24 (CAN): ^X - Cancel
   '\u0019': 'Ctrl+Y', // 25 (EM): ^Y
   '\u001a': 'Ctrl+Z', // 26 (SUB): ^Z - "Substitución"
-  '\u001b': 'Esc', // 27 (ESC): ^[ - Escape key or Ctrl+3
+  '\u001b': 'Escape', // 27 (ESC): ^[ - Escape key or Ctrl+3
   '\u001c': 'Ctrl+4', // 28 (FS): ^\ - Ctrl+4
   '\u001d': 'Ctrl+5', // 29 (GS): ^] - Ctrl+5
   '\u001e': 'Ctrl+6', // 30 (RS): ^^ - Ctrl+6

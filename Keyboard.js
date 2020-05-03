@@ -1,6 +1,15 @@
 const assert = require('assert')
 const { Transform, Readable } = require('stream')
 
+// TODO this conversion strategy is still so ugly
+const utf8keys = require('./utf8keys')
+function keystroke (buffer) {
+  if (buffer.length === 1 && buffer[0] === 127) {
+    return 'Backspace' // empty string can't be a key
+  }
+  return utf8keys[buffer.toString('utf8')] || buffer.toString('utf8')
+}
+
 // utility to compare if one array and one buffer are equivalent
 const equivalent = (array, buffer) => {
   return array.length === buffer.length &&
@@ -116,9 +125,21 @@ class Keyboard extends Transform {
       clearTimeout(this._kbd.timeout)
       this._setTimeout()
     }
-    // assume each chunk is a keystroke
-    callback(null, chunk)
+
+    // assume each chunk is a keystroke, delegate on producer proper "chunking"
+    // TODO:
+    // - what if 'chunk is not a key combo'? => 'do NOT push data, discard it'?
+    callback(null, this._kbd.humanize ? keystroke(chunk) : chunk)
+    // line above is the same as `this.push(result); callback(null)`
+
+    // detect 'end of input stream' key code (opts.sigint)
     if (equivalent(this._kbd.sigint, chunk)) {
+      /*
+      if (this.listeners('focuslost').length) {
+        log.info('Focus lost on keycode %j', opts.sigint)
+        return this.emit('focuslost')
+      }
+      */
       log.info('Ending on keycode %j', this._kbd.sigint)
       return this.end()
     }
@@ -144,39 +165,10 @@ class Keyboard extends Transform {
 
 module.exports = Keyboard
 
-/* function readkeys (opts) {
-
-  output._transform = function _go (chunk, encoding, callback) {
-    log.debug('keyboard processing %j', Aslice.call(chunk))
-    // TODO may be reading buffered data!!
-    // if 'chunk is not a key combo' => 'do NOT push data, discard it'
-    // apply conversion to human-readable key combo if desired
-    callback(null, opts.humanize ? keystroke(chunk) : chunk)
-    // line above is the same as `this.push(result); callback(null)`
-    // detect 'end of input stream' key code (opts.sigint)
-    if (~chunk.indexOf(opts.sigint)) {
-      if (this.listeners('focuslost').length) {
-        log.info('Focus lost on keycode %j', opts.sigint)
-        return this.emit('focuslost')
-      }
-      log.warn('Ending on keycode %j', opts.sigint)
-      return this.end()
-    }
-  }
-
+/* ******** LEGACY BELOW
+function readkeys (opts) {
   return opts.input ? opts.input.pipe(output) : output
 }
-
-// TODO this conversion strategy is still so ugly
-const utf8keys = require('./utf8keys')
-// const { format } = require('util')
-function keystroke (buffer) {
-  if (buffer.length === 1 && buffer[0] === 127) {
-    return 'Backspace' // empty string can't be a key
-  }
-  return utf8keys[buffer.toString('utf8')] || buffer.toString('utf8')
-}
-
 */
 
 /* vim: set expandtab: */

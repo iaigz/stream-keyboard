@@ -6,6 +6,8 @@ cd "$repo" || exit
 node test/exports.js || exit
 node test/raw-through.js || exit
 
+node test/humanize.js || exit
+
 node test/sigint-default.js || exit
 node test/sigint-number.js || exit
 node test/sigint-array.js || exit

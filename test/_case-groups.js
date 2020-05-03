@@ -4,14 +4,20 @@ const mapChar = (ch) => [buffer2array(Buffer.from(ch)), ch]
 
 /**
  * Test case generation
-let cases = [
-  // first element is the buffer values, second is "humanized"
-  [ [0x00], 'NUL' ]
-  [ [0x01], 'Ctrl+A' ],
-  [ [0x02], 'Ctrl+B' ],
-  // etc...
-]
-*/
+ *
+ * Let's create case group arrays with the following format:
+ *
+ * ```
+ * let cases = [
+ *   // first element is the buffer values, second is "humanized"
+ *   [ [0x00], 'Ctrl+2' ],
+ *   [ [0x01], 'Ctrl+A' ],
+ *   [ [0x02], 'Ctrl+B' ],
+ *   // etc...
+ * ]
+ * ```
+ *
+ */
 
 //
 // control characters 1 byte length (0 to 31)
@@ -64,7 +70,7 @@ exports.control.push([[127], 'Backspace'])
 //
 const numbers = '0123456789'
 const abcdary = 'abcdefghijklmnopqrstuvwxyz'
-const symbols = ' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+const symbols = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 // pritable number characters (48 to 57)
 exports.numbers = numbers.split('').map(mapChar)
 // printable uppercase letter characters (65 to 90)
@@ -73,6 +79,7 @@ exports.uppercase = abcdary.toUpperCase().split('').map(mapChar)
 exports.lowercase = abcdary.split('').map(mapChar)
 // printable 1 byte symbol chars (32 to 47; 58 to 64; 91 to 96; 123 to 126)
 exports.symbols = symbols.split('').map(mapChar)
+exports.symbols.unshift([[32], 'Space'])
 
 //
 // control characters 2 byte length (part of "latin-1 supplement")
@@ -119,7 +126,7 @@ exports.symbols3 = symbols3.split('').map(mapChar)
 // see https://unicode-table.com/en/blocks/
 
 //
-// 4 byte control sequences
+// TODO 4 byte control sequences
 //
 
 /* vim: set expandtab: */
