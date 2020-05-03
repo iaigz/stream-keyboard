@@ -19,7 +19,7 @@ stub.pipe(keystream)
     if (data.length === 1) {
       console.log('PASS data buffer length is 1')
     } else {
-      console.error(`data.length:`, data.length)
+      console.error('data.length:', data.length)
       console.error('data:', data)
       console.log('FAIL data buffer length incorrect')
       process.exit(1)
@@ -27,7 +27,7 @@ stub.pipe(keystream)
     if (data[0] === sigint) {
       console.log('PASS data buffer has expected value')
     } else {
-      console.error(`actual (data[0]):`, data[0])
+      console.error('actual (data[0]):', data[0])
       console.error('expected:', sigint)
       console.log('FAIL data buffer value is not correct')
       process.exit(1)

@@ -25,7 +25,7 @@ log.level = Log.VERB
 class Keyboard extends Transform {
   constructor (opts = {}) {
     if (opts instanceof Readable) opts = { input: opts }
-    if ('number' === typeof opts.sigint) {
+    if (typeof opts.sigint === 'number') {
       opts = { ...opts, sigint: [opts.sigint] }
     }
 
