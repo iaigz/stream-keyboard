@@ -6,10 +6,13 @@ const { PassThrough } = require('stream')
 const Keyboard = require('..')
 
 const stub = new PassThrough()
-const keystream = new Keyboard()
+
+// aditionally to the data pass-through, will check sigint: false works
+const keystream = new Keyboard({ sigint: false })
 
 const seq = [
   [0],
+  [3], // we test also to not end on sigint
   [27, 14],
   [65, 66, 128]
 ]

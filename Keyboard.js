@@ -84,7 +84,11 @@ class Keyboard extends Transform {
         return log.warn('an unkown source was unpiped')
       }
       if (source.isTTY) {
-        source.isRaw && source.setRawMode(false)
+        if (source.isRaw) {
+          source.setRawMode(false)
+          // trick to gracefully exit when reading from process.stdin
+          source === process.stdin && source.resume().pause()
+        }
         if (this._kbd.traps[id]) {
           process.removeListener('exit', this._kbd.traps[id])
           delete this._kbd.traps[id]

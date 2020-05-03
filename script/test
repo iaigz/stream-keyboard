@@ -15,6 +15,18 @@ node test/tty-rawmode-trap.js || exit
 node test/tty-rawmode-error.js || exit
 
 {
+  TEST=(timeout --foreground 1 node test/stdin-pause.js)
+  echo TEST "${TEST[*]}"
+  "${TEST[@]}"
+  CODE=$?
+  (( $CODE )) \
+    && echo "FAIL test did not complete" \
+    || echo "PASS test run ends with code 0"
+  echo CODE $CODE
+  (( $CODE )) && exit $CODE
+}
+
+{
   echo "TEST standard --fix"
   standard --fix
   code=$?
