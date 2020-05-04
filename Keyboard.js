@@ -1,14 +1,8 @@
 const assert = require('assert')
 const { Transform, Readable } = require('stream')
 
-// TODO this conversion strategy is still so ugly
-const utf8keys = require('./utf8keys')
-function keystroke (buffer) {
-  if (buffer.length === 1 && buffer[0] === 127) {
-    return 'Backspace' // empty string can't be a key
-  }
-  return utf8keys[buffer.toString('utf8')] || buffer.toString('utf8')
-}
+// default conversion strategy
+const strategy = require('./strategy-unicode')
 
 // utility to compare if one array and one buffer are equivalent
 const equivalent = (array, buffer) => {
@@ -54,6 +48,7 @@ class Keyboard extends Transform {
       input: null, // Readable stream to pipe into
       sigint: [3], // keycode to interpret as 'end of input stream' (Ctrl+C)
       humanize: false, // whenever to convert input keycodes to a string
+      strategy: strategy, // conversion strategy: '(buffer) => [String]'
       // internal data
       sources: [],
       traps: Object.create(null),
@@ -62,6 +57,9 @@ class Keyboard extends Transform {
     }
     if (this._kbd.input !== null) {
       assert(opts.input instanceof Readable, 'opts.input must be Readable')
+    }
+    if (typeof this._kbd.strategy !== 'function') {
+      throw new TypeError('opts.strategy must be a function')
     }
 
     // actions to do when sources are piped-in (usually process.stdin)
@@ -127,10 +125,14 @@ class Keyboard extends Transform {
     }
 
     // assume each chunk is a keystroke, delegate on producer proper "chunking"
-    // TODO:
-    // - what if 'chunk is not a key combo'? => 'do NOT push data, discard it'?
-    callback(null, this._kbd.humanize ? keystroke(chunk) : chunk)
-    // line above is the same as `this.push(result); callback(null)`
+    if (!this._kbd.humanize) {
+      callback(null, chunk)
+    } else {
+      callback(null, this._kbd.strategy(chunk))
+      // TODO:
+      // - what if 'chunk is not a key combo'?
+      // => 'do NOT push data, discard it'?
+    }
 
     // detect 'end of input stream' key code (opts.sigint)
     if (equivalent(this._kbd.sigint, chunk)) {

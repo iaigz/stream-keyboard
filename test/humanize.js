@@ -13,11 +13,13 @@ function debug (chunk, code, string) {
   console.error('')
   console.error('code (which generates keystroke):', code)
   console.error('code.length:', code.length)
-  console.error('')
-  console.error('chunk (actual value):', chunk)
-  // convert through %j to avoid writing raw control sequences
-  console.error('stringifyed chunk: %j', chunk.toString())
-  console.error('stringifyed chunk length:', chunk.toString().length)
+  if (chunk !== false) {
+    console.error('')
+    console.error('chunk (actual value):', chunk)
+    // convert through %j to avoid writing raw control sequences
+    console.error('stringifyed chunk: %j', chunk.toString())
+    console.error('stringifyed chunk length:', chunk.toString().length)
+  }
   console.error('')
   console.error('string (expected value):', string)
   console.error('string.length:', string.length)
@@ -27,19 +29,25 @@ function debug (chunk, code, string) {
 function testGroup (next) {
   const key = groups.shift()
   const group = cases[key]
-  console.log('DESC key as', key)
+  console.log('DESC group as', key)
   let promise = Promise.resolve()
   group.forEach((value, idx) => {
     promise = promise.then(() => new Promise((resolve, reject) => {
-      console.log(`DESC case as ${key}[${idx}]`)
       const [code, string] = [...value]
+      console.log(`DESC case as ${key}[${idx}] (${string})`)
+      const timeout = setTimeout(() => {
+        debug(false, code, string)
+        console.log(`FAIL ${string} produces no "data" event`)
+        reject(new Error('missing "data" event'))
+      }, 300)
       keystream.once('data', (chunk) => {
+        clearTimeout(timeout)
         const actual = chunk.toString()
         if (actual.length !== string.length || actual !== string) {
           debug(chunk, code, string)
           return reject(new Error('chunk.toString() is not correct'))
         }
-        console.log(`PASS ${key}[${idx}] string value is correct`)
+        console.log(`PASS ${string} value is correct`)
         resolve()
       })
       keystream.write(Buffer.from(code))

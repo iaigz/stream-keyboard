@@ -1,11 +1,21 @@
+/*
+ * WARN: This conversion strategy is legacy/old and so dirty
+ */
 
-module.exports = {
+module.exports = function keystroke (buffer) {
+  if (buffer.length === 1 && buffer[0] === 127) {
+    return 'Backspace' // empty string can't be a key
+  }
+  return utf8keys[buffer.toString('utf8')] || buffer.toString('utf8')
+}
+
+const utf8keys = {
   //
   // 0 to 31 (and 127 too) are Ctrl sequences
   //
   // values from 1 to 26 are Ctrl+[a-z],
   // but some codes collide with special keys
-  '\u0000': 'Ctrl+2', // 0 (NUL): ^@ - Null character
+  '\u0000': 'Ctrl+Space', // 0 (NUL): ^@ - Null character
   '\u0001': 'Ctrl+A', // 1 (SOH): ^A - Start of heading
   '\u0002': 'Ctrl+B', // 2 (STX): ^B - Start of text
   '\u0003': 'Ctrl+C', // 3 (ETX): ^C - End of text
