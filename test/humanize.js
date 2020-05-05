@@ -57,6 +57,7 @@ function testGroup (next) {
     console.log(`PASS all '${key}' group cases succeed`)
     return next()
   }).catch(err => {
+    console.error(cases[key])
     console.log(`FAIL all '${key}' group cases should succeed`)
     next(err)
   })

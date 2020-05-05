@@ -158,8 +158,55 @@ exports.symbols3 = symbols3.split('').map(mapChar)
 // NOTE: there are lots of unicode characters which a keboard can't generate
 
 //
+// Function keys
+//
+// block 1 (F1 to F4)
+exports.fnkeys = ['F1', 'F2', 'F3', 'F4'].map((key, idx) => {
+  return [[27, 79, 80 + idx], key]
+})
+exports.fnkeysAlt = exports.fnkeys.map((value, idx) => {
+  return [[27, 91, 49, 59, 51, 80 + idx], `Alt+${value[1]}`]
+})
+exports.fnkeysCtrl = exports.fnkeys.map((value, idx) => {
+  return [[27, 91, 49, 59, 53, 80 + idx], `Ctrl+${value[1]}`]
+})
+// block 2 (F5 to F12)
+const fn2bases = (idx) => {
+  let mark = 49 // F5 to F8 mark=49, F9 to F12 mark=50
+  let base = 53
+  if (idx > 0) { base = 54 } // OMG: F5 base=53 but F6 to F8 have 55, 56, 57
+  if (idx > 3) { base = 44; mark = 50 } // F9 to F12 have 48 to 51
+  return [mark, base]
+}
+exports.fnkeys2 = ['F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
+  .map((key, idx) => {
+    const [mark, base] = fn2bases(idx)
+    return [[27, 91, mark, base + idx, 126], key]
+  })
+exports.fnkeys2Alt = exports.fnkeys2.map((val, idx) => {
+  const [mark, base] = fn2bases(idx)
+  return [[27, 91, mark, base + idx, 59, 51, 126], `Alt+${val[1]}`]
+})
+exports.fnkeys2Ctrl = exports.fnkeys2.map((val, idx) => {
+  const [mark, base] = fn2bases(idx)
+  return [[27, 91, mark, base + idx, 59, 53, 126], `Ctrl+${val[1]}`]
+})
+
+//
 // TODO 4 byte control sequences
 //
+// exports.control4 = []
+// [27,91,50,126] - Insert key
+// [27,91,51,126] - Delete key
+// [27,91,52,126] - Page up
+// [27,91,53,126] - Page down
+
+/* TODO Arrow keys
+  '\u001b[A': 'ArrowUp', // [27,91,65]
+  '\u001b[B': 'ArrowDown', // [27,91,66]
+  '\u001b[C': 'ArrowRight', // [27,91,67]
+  '\u001b[D': 'ArrowLeft' // [27,91,68]
+*/
 
 /* vim: set expandtab: */
 /* vim: set filetype=javascript ts=2 shiftwidth=2: */
