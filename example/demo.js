@@ -21,7 +21,9 @@ process.stdin
   .pipe(new Transform({
     transform (chunk, enc, cb) {
       this.push(`pressed key is '${chunk.toString('utf8')}'\n`)
-      log.info('> tip: use Ctrl+C to exit demo')
+      if (chunk.toString() !== 'Ctrl+C') {
+        log.info('> tip: use Ctrl+C to exit demo')
+      }
       cb(null)
     }
   }))
