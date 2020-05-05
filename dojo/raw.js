@@ -17,8 +17,8 @@ process.stdin
   // amazing way to push an extra newline character after each humanized key
   .pipe(new Transform({
     transform (chunk, enc, cb) {
-      console.error('chunk:', chunk)
-      console.error('values:', Array.prototype.map.call(chunk, c => c))
+      log.verb('stdin chunk:', chunk)
+      log.verb('*dec values:', Array.prototype.map.call(chunk, c => c))
       cb(null)
     }
   }))

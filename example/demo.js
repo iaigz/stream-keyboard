@@ -17,10 +17,9 @@ process.stdin
   .on('end', () => {
     log.info('keyboard stream has end, process should exit gracefully')
   })
-  // amazing way to push an extra newline character after each humanized key
   .pipe(new Transform({
     transform (chunk, enc, cb) {
-      this.push(`pressed key is '${chunk.toString('utf8')}'\n`)
+      this.push(`pressed key is '${chunk.toString()}'\n`)
       if (chunk.toString() !== 'Ctrl+C') {
         log.info('> tip: use Ctrl+C to exit demo')
       }

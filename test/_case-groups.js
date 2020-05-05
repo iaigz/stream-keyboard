@@ -161,8 +161,8 @@ exports.symbols3 = symbols3.split('').map(mapChar)
 // Function keys
 //
 // block 1 (F1 to F4)
-exports.fnkeys = ['F1', 'F2', 'F3', 'F4'].map((key, idx) => {
-  return [[27, 79, 80 + idx], key]
+exports.fnkeys = [1, 2, 3, 4].map((num, idx) => {
+  return [[27, 79, 80 + idx], `F${num}`]
 })
 exports.fnkeysAlt = exports.fnkeys.map((value, idx) => {
   return [[27, 91, 49, 59, 51, 80 + idx], `Alt+${value[1]}`]
@@ -176,9 +176,11 @@ const fn2bases = (idx) => {
   let base = 53
   if (idx > 0) { base = 54 } // OMG: F5 base=53 but F6 to F8 have 55, 56, 57
   if (idx > 3) { base = 44; mark = 50 } // F9 to F12 have 48 to 51
+  if (idx > 5) { base = 45 } // OMG: F9,F10 have 48,49 but F11,F12 have 51,52
   return [mark, base]
 }
-exports.fnkeys2 = ['F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
+exports.fnkeys2 = Array(8).fill('F')
+  .map((F, i) => `F${i + 5}`)
   .map((key, idx) => {
     const [mark, base] = fn2bases(idx)
     return [[27, 91, mark, base + idx, 126], key]
@@ -191,22 +193,44 @@ exports.fnkeys2Ctrl = exports.fnkeys2.map((val, idx) => {
   const [mark, base] = fn2bases(idx)
   return [[27, 91, mark, base + idx, 59, 53, 126], `Ctrl+${val[1]}`]
 })
+// additional text-only-mode codes (F1 to F5)
+exports.fnkeysTextOnly = Array(5).fill('F')
+  .map((F, i) => `F${i + 1}`)
+  .map((key, idx) => [[27, 91, 91, 65 + idx], key])
 
 //
-// TODO 4 byte control sequences
+// Arrow keys
 //
-// exports.control4 = []
+exports.arrows = ['Up', 'Down', 'Right', 'Left'].map((dir, idx) => {
+  return [[27, 91, 65 + idx], `Arrow${dir}`]
+})
+exports.arrowsAlt = exports.arrows.map((val, idx) => {
+  return [[27, 91, 49, 59, 51, 65 + idx], `Alt+${val[1]}`]
+})
+exports.arrowsCtrl = exports.arrows.map((val, idx) => {
+  return [[27, 91, 49, 59, 53, 65 + idx], `Ctrl+${val[1]}`]
+})
+exports.arrowsCtrlAlt = exports.arrows.map((val, idx) => {
+  return [[27, 91, 49, 59, 55, 65 + idx], `Ctrl+Alt+${val[1]}`]
+})
+
+//
+// Special "6" keys
+//
+// text-only mode
+const special = ['Home', 'Insert', 'Delete', 'End', 'PageUp', 'PageDown']
+exports.specialTextOnly = special.map((keyname, idx) => {
+  return [[27, 91, idx + 49, 126], keyname]
+})
+// for some reason, home and end differ on Xorg
+exports.specialXterm = [
+  [[27, 91, 70], 'End'],
+  [[27, 91, 72], 'Home']
+]
 // [27,91,50,126] - Insert key
 // [27,91,51,126] - Delete key
 // [27,91,52,126] - Page up
 // [27,91,53,126] - Page down
-
-/* TODO Arrow keys
-  '\u001b[A': 'ArrowUp', // [27,91,65]
-  '\u001b[B': 'ArrowDown', // [27,91,66]
-  '\u001b[C': 'ArrowRight', // [27,91,67]
-  '\u001b[D': 'ArrowLeft' // [27,91,68]
-*/
 
 /* vim: set expandtab: */
 /* vim: set filetype=javascript ts=2 shiftwidth=2: */
