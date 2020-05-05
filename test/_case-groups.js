@@ -227,10 +227,7 @@ exports.specialXterm = [
   [[27, 91, 70], 'End'],
   [[27, 91, 72], 'Home']
 ]
-// [27,91,50,126] - Insert key
-// [27,91,51,126] - Delete key
-// [27,91,52,126] - Page up
-// [27,91,53,126] - Page down
+// TODO modifiers
 
 /* vim: set expandtab: */
 /* vim: set filetype=javascript ts=2 shiftwidth=2: */

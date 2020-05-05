@@ -2,17 +2,19 @@
   "name": "@iaigz/stream-keyboard",
   "version": "1.0.0",
   "description": "Utility to read keystrokes from Readable streams, including process.stdin",
-  "main": "readkeys.js",
+  "main": "Keyboard.js",
   "files": [
-    "readkeys.js",
-    "utf8keys.js"
+    "Keyboard.js",
+    "strategy-unicode.js"
   ],
   "directories": {
     "test": "test"
   },
   "scripts": {
     "demo": "node example/demo.js",
-    "test": "./script/test"
+    "test": "./script/test",
+    "add-cases": "iai autowatch test/_case-groups.js node test/humanize.js",
+    "test-cases": "iai autowatch strategy-unicode.js node test/humanize.js"
   },
   "repository": {
     "type": "git",
@@ -32,8 +34,5 @@
   "homepage": "https://github.com/iaigz/stream-keyboard#readme",
   "dependencies": {
     "@iaigz/core-log": "git://github.com/iaigz/core-log.git"
-  },
-  "devDependencies": {
-    "@iaigz/tool-job": "file:../tool-job"
   }
 }
