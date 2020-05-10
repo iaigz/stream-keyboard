@@ -42,7 +42,7 @@ process.stdin
   .pipe(process.stdout)
 ```
 
-see [example/demo.js](./example/demo)
+see [example/demo.js](https://github.com/iaigz/stream-keyboard/blob/master/example/demo.js)
 
 ## default options
 
