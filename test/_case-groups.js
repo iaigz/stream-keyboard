@@ -217,17 +217,36 @@ exports.arrowsCtrlAlt = exports.arrows.map((val, idx) => {
 //
 // Special "6" keys
 //
-// text-only mode
+// text-only mode (some shared with xorg mode)
 const special = ['Home', 'Insert', 'Delete', 'End', 'PageUp', 'PageDown']
 exports.specialTextOnly = special.map((keyname, idx) => {
   return [[27, 91, idx + 49, 126], keyname]
+})
+// text-only mode don't generates modified versions, but xorg uses some codes
+exports.specialAlt = special.map((keyname, idx) => {
+  return [[27, 91, idx + 49, 59, 51, 126], `Alt+${keyname}`]
+})
+exports.specialCtrl = special.map((keyname, idx) => {
+  return [[27, 91, idx + 49, 59, 53, 126], `Ctrl+${keyname}`]
+})
+// there is a code which shutdowns linux kernel, but KISS
+exports.specialCtrlAlt = special.map((keyname, idx) => {
+  return [[27, 91, idx + 49, 59, 55, 126], `Ctrl+Alt+${keyname}`]
 })
 // for some reason, home and end differ on Xorg
 exports.specialXterm = [
   [[27, 91, 70], 'End'],
   [[27, 91, 72], 'Home']
 ]
-// TODO modifiers
+exports.specialXtermAlt = exports.specialXterm.map((val, idx) => {
+  return [[27, 91, 49, 59, 51, val[0][2]], `Alt+${val[1]}`]
+})
+exports.specialXtermCtrl = exports.specialXterm.map((val, idx) => {
+  return [[27, 91, 49, 59, 53, val[0][2]], `Ctrl+${val[1]}`]
+})
+exports.specialXtermCtrlAlt = exports.specialXterm.map((val, idx) => {
+  return [[27, 91, 49, 59, 55, val[0][2]], `Ctrl+Alt+${val[1]}`]
+})
 
 /* vim: set expandtab: */
 /* vim: set filetype=javascript ts=2 shiftwidth=2: */

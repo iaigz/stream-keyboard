@@ -11,6 +11,7 @@
     "test": "test"
   },
   "scripts": {
+    "raw": "node example/raw.js",
     "demo": "node example/demo.js",
     "test": "./script/test",
     "add-cases": "iai autowatch test/_case-groups.js node test/humanize.js",

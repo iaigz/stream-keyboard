@@ -103,21 +103,28 @@ module.exports = function keystroke (buffer) {
       break
     case 6:
       if (values[1] !== 91) { break }
-      if (values[2] !== 49) { break }
       if (values[3] !== 59) { break }
       if (values[4] !== 51 && values[4] !== 53 && values[4] !== 55) { break }
       modkey = values[4] === 51 ? 'Alt' : 'Ctrl'
-      // ctrl/alt modified function keys (1 to 4)
-      if (values[5] > 79 && values[5] < 84) {
-        if (values[4] === 55) { break } // stdin will not catch Ctrl+Alt+FNKEY
-        return `${modkey}+F${values[5] - 79}`
+      if (values[4] === 55) { modkey = 'Ctrl+Alt' }
+      if (values[2] === 49 && values[5] !== 126) {
+        // ctrl/alt modified function keys (1 to 4)
+        if (values[5] > 79 && values[5] < 84) {
+          if (values[4] === 55) { break } // imposible Ctrl+Alt+FNKEY
+          return `${modkey}+F${values[5] - 79}`
+        }
+        // ctrl/alt modified arrow keys
+        if (values[5] > 64 && values[5] < 69) {
+          return `${modkey}+Arrow${arrows[values[5] - 65]}`
+        }
+        // xterm mode modified HOME and END keys
+        if (values[5] === 70) { return `${modkey}+${special[3]}` }
+        if (values[5] === 72) { return `${modkey}+${special[0]}` }
       }
-      // ctrl/alt modified arrow keys
-      if (values[5] > 64 && values[5] < 69) {
-        if (values[4] === 55) { modkey = 'Ctrl+Alt' }
-        return `${modkey}+Arrow${arrows[values[5] - 65]}`
-      }
-      break
+      if (values[5] !== 126) { break }
+      if (values[2] < 49 || values[2] > 54) { break }
+      // modified special key (text-only plus some at xorg)
+      return `${modkey}+${special[values[2] - 49]}`
     case 7:
       // alt function keys (5 to 12)
       if (values[6] !== 126) { break }
@@ -134,16 +141,6 @@ module.exports = function keystroke (buffer) {
   log.warn('unknown escape sequence', buffer)
   return unknown(values)
 }
-
-//
-// TODO Special keys
-//
-/*
-  '\u001b[2~': 'Insert', // [27,91,50,126] - Insert key
-  '\u001b[3~': 'Delete', // [27,91,51,126] - Delete key
-  '\u001b[5~': 'RePag', // [27,91,52,126] - Page up
-  '\u001b[6~': 'AvPag', // [27,91,53,126] - Page down
-*/
 
 /* vim: set expandtab: */
 /* vim: set filetype=javascript ts=2 shiftwidth=2: */
