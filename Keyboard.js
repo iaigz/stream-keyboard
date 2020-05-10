@@ -45,7 +45,7 @@ class Keyboard extends Transform {
     this._kbd = {
       // options for behaviour
       t: 0, // max seconds waiting for input until 'end' (disabled by default)
-      input: null, // Readable stream to pipe into
+      input: null, // Readable stream to pipe into TODO => YAGNI
       sigint: [3], // keycode to interpret as 'end of input stream' (Ctrl+C)
       humanize: false, // whenever to convert input keycodes to a string
       strategy: strategy, // conversion strategy: '(buffer) => [String]'
