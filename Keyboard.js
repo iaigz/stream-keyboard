@@ -167,11 +167,5 @@ class Keyboard extends Transform {
 
 module.exports = Keyboard
 
-/* ******** LEGACY BELOW
-function readkeys (opts) {
-  return opts.input ? opts.input.pipe(output) : output
-}
-*/
-
 /* vim: set expandtab: */
 /* vim: set filetype=javascript ts=2 shiftwidth=2: */
